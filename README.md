@@ -1,8 +1,6 @@
 # 多跳推理医疗问答系统 (Multi-Hop Medical RAG)
 
 <div align="center">
-  <img src="architecture.html" alt="系统架构图" style="max-width:100%;">
-  <br>
   <em>基于迭代式多跳推理的增强检索生成医疗问答系统</em>
 </div>
 
