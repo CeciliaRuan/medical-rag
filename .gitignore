@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+venv/
+.venv/
+
+# IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Project specific cache / runtime
+.gradio/
+output_files/
+output/
+
+# Generated artifacts
+*.index
+*.json

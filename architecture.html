@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目架构流程图</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #f5f7fa;
+  font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+.container {
+  max-width: 1100px;
+  width: 100%;
+}
+h1 {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+.subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 30px;
+}
+svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.box {
+  fill: #fff;
+  stroke-width: 1.5;
+  rx: 8;
+  ry: 8;
+}
+.box-user { stroke: #4361ee; fill: #eef0ff; }
+.box-entry { stroke: #3a0ca3; fill: #f0edff; }
+.box-path { stroke: #f72585; fill: #fff0f6; }
+.box-kb { stroke: #7b2d8e; fill: #f8f0ff; }
+.box-simple { stroke: #4cc9f0; fill: #f0fcff; }
+.box-multi { stroke: #f72585; fill: #fff0f6; }
+.box-merge { stroke: #7209b7; fill: #f5f0ff; }
+.box-output { stroke: #06d6a0; fill: #f0fff8; }
+.box-file { stroke: #fb8500; fill: #fff8f0; }
+.box-infra { stroke: #8d99ae; fill: #f8f9fa; stroke-dasharray: 6,4; }
+.box-api { stroke: #e63946; fill: #fff0f2; }
+.text { font-size: 13px; font-weight: 500; text-anchor: middle; dominant-baseline: central; }
+.text-sm { font-size: 11px; font-weight: 400; text-anchor: middle; dominant-baseline: central; fill: #555; }
+.text-label { font-size: 10px; text-anchor: middle; dominant-baseline: central; fill: #888; }
+.text-white { fill: #fff; }
+.arrow { fill: none; stroke: #999; stroke-width: 1.5; marker-end: url(#arrowhead); }
+.arrow-path { fill: none; stroke: #f72585; stroke-width: 2; stroke-dasharray: 6,3; marker-end: url(#arrowhead-pink); }
+.arrow-kb { fill: none; stroke: #7b2d8e; stroke-width: 1.5; marker-end: url(#arrowhead); }
+.arrow-merge { fill: none; stroke: #7209b7; stroke-width: 1.5; marker-end: url(#arrowhead); }
+.badge { fill: #e63946; rx: 10; ry: 10; }
+.badge-text { font-size: 9px; fill: #fff; text-anchor: middle; dominant-baseline: central; }
+.tag { font-size: 10px; font-weight: 500; }
+.tag-agent { fill: #f72585; }
+.tag-rag { fill: #4cc9f0; }
+.tag-file { fill: #fb8500; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>多跳推理 RAG 医疗问答系统 · 架构流程图</h1>
+<p class="subtitle">📌 蓝 = 用户/入口 &nbsp;&nbsp;|&nbsp;&nbsp; 粉 = Agent 路径 &nbsp;&nbsp;|&nbsp;&nbsp; 紫 = 知识库 &nbsp;&nbsp;|&nbsp;&nbsp; 绿 = 输出 &nbsp;&nbsp;|&nbsp;&nbsp; 灰虚线 = 基础设施</p>
+<svg viewBox="0 0 1060 1480" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#999"/>
+    </marker>
+    <marker id="arrowhead-pink" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#f72585"/>
+    </marker>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- ══════════════════════════ 1. 用户 =══════════════════════════ -->
+  <rect class="box box-user" x="400" y="10" width="200" height="50" filter="url(#shadow)"/>
+  <text class="text" x="500" y="35" fill="#4361ee">🧑 用户（Gradio Web UI）</text>
+  <line class="arrow" x1="500" y1="60" x2="500" y2="90"/>
+
+  <!-- ══════════════════════════ 2. Config =══════════════════════════ -->
+  <rect class="box box-infra" x="820" y="10" width="220" height="50" filter="url(#shadow)"/>
+  <text class="text-sm" x="930" y="26" fill="#555">config.py</text>
+  <text class="text-sm" x="930" y="42" fill="#888">API Key · 模型 · 检索参数 · 路径</text>
+  <line class="arrow" x1="820" y1="35" x2="620" y2="35" stroke="#bbb" stroke-dasharray="4,3"/>
+
+  <!-- ══════════════════════════ 3. 入口函数 =══════════════════════════ -->
+  <rect class="box box-entry" x="350" y="90" width="300" height="70" filter="url(#shadow)"/>
+  <text class="text" x="500" y="110" fill="#3a0ca3">ask_question_parallel()</text>
+  <text class="text-sm" x="500" y="130" fill="#5a5a8a">总调度：选知识库、开并行任务、合并结果</text>
+  <text class="text-sm" x="500" y="148" fill="#888">rag.py · line 1234</text>
+
+  <!-- 分岔标注 -->
+  <text class="text-label" x="230" y="138" fill="#888">config 驱动所有行为</text>
+  <line class="arrow" x1="350" y1="125" x2="260" y2="138" stroke="#bbb" stroke-dasharray="4,3"/>
+
+  <!-- ══════════════════════════ 分两边 =══════════════════════════ -->
+  <line class="arrow" x1="500" y1="160" x2="500" y2="185"/>
+  <line class="arrow" x1="500" y1="185" x2="250" y2="185"/>
+  <line class="arrow" x1="500" y1="185" x2="750" y2="185"/>
+  <line class="arrow" x1="250" y1="185" x2="250" y2="210"/>
+  <line class="arrow" x1="750" y1="185" x2="750" y2="210"/>
+
+  <!-- 左：联网搜索 -->
+  <rect class="box box-path" x="120" y="210" width="260" height="70" filter="url(#shadow)"/>
+  <text class="text" x="250" y="232" fill="#f72585">🌐 联网搜索路径</text>
+  <text class="text-sm" x="250" y="252" fill="#666">search_bing() · retrievor.py</text>
+  <text class="text-sm" x="250" y="268" fill="#888">Bing 搜索引擎 · 爬取 TOP 结果</text>
+
+  <!-- 右：知识库路径 -->
+  <rect class="box box-kb" x="620" y="210" width="260" height="70" filter="url(#shadow)"/>
+  <text class="text" x="750" y="232" fill="#7b2d8e">📚 知识库检索路径</text>
+  <text class="text-sm" x="750" y="252" fill="#666">rag.py · get_kb_paths()</text>
+  <text class="text-sm" x="750" y="268" fill="#888">选择知识库 → 加载 FAISS 索引</text>
+
+  <!-- 知识库管理横条 -->
+  <rect class="box box-kb" x="0" y="300" width="260" height="80" filter="url(#shadow)" opacity="0.6"/>
+  <text class="text-sm" x="130" y="320" fill="#7b2d8e">知识库管理</text>
+  <text class="text-sm" x="130" y="338" fill="#555">create / delete / list</text>
+  <text class="text-sm" x="130" y="354" fill="#555">每个知识库独立索引</text>
+  <line class="arrow-kb" x1="260" y1="340" x2="630" y2="340" stroke-dasharray="4,3" stroke="#7b2d8e"/>
+
+  <!-- ════════════════════════ 左路往下 =═══════════════════════ -->
+  <line class="arrow" x1="250" y1="280" x2="250" y2="310"/>
+
+  <!-- left: Bing search continued -->
+  <rect class="box box-path" x="120" y="310" width="260" height="60" filter="url(#shadow)"/>
+  <text class="text-sm" x="250" y="330" fill="#444">提取网页正文</text>
+  <text class="text-sm" x="250" y="350" fill="#888">lxml · HTML 解析</text>
+
+  <line class="arrow" x1="250" y1="370" x2="250" y2="400"/>
+
+  <rect class="box box-path" x="120" y="400" width="260" height="60" filter="url(#shadow)"/>
+  <text class="text-sm" x="250" y="420" fill="#444">搜索结果拼接</text>
+  <text class="text-sm" x="250" y="440" fill="#888">get_search_background()</text>
+
+  <!-- ════════════════════════ 右路分叉：简单 RAG vs 多跳 RAG =═══════════ -->
+  <line class="arrow" x1="750" y1="280" x2="750" y2="310"/>
+
+  <!-- 选择标注 -->
+  <rect x="630" y="295" width="240" height="24" rx="12" fill="#eee" opacity="0.8"/>
+  <text class="text-sm" x="750" y="307" fill="#666">multi_hop = True / False ?</text>
+
+  <line class="arrow" x1="700" y1="319" x2="560" y2="350"/>
+  <line class="arrow" x1="800" y1="319" x2="940" y2="350"/>
+
+  <!-- 右左：简单 RAG -->
+  <rect class="box box-simple" x="390" y="350" width="280" height="70" filter="url(#shadow)"/>
+  <text class="text" x="530" y="370" fill="#4cc9f0" font-size="12">🟦 简单 RAG</text>
+  <text class="text-sm" x="530" y="390" fill="#555">simple_generate_answer()</text>
+  <text class="text-sm" x="530" y="408" fill="#888">1 次向量检索 → 1 次 LLM 生成</text>
+
+  <!-- 右右：多跳 RAG（Agent） -->
+  <rect class="box box-multi" x="780" y="350" width="280" height="70" filter="url(#shadow)"/>
+  <text class="text" x="920" y="370" fill="#f72585">💗 多跳推理 RAG（Agent）</text>
+  <text class="text-sm" x="920" y="390" fill="#555">ReasoningRAG 类</text>
+  <text class="text-sm" x="920" y="408" fill="#888">迭代检索 + LLM 推理，最多 3 跳</text>
+
+  <!-- ════════════════════════ 多跳 Agent 展开 =═══════════════════════ -->
+  <line class="arrow" x1="920" y1="420" x2="920" y2="450"/>
+
+  <rect class="box box-multi" x="780" y="450" width="280" height="55" filter="url(#shadow)"/>
+  <text class="text-sm" x="920" y="470" fill="#444">Hop 1：向量检索 query</text>
+  <text class="text-sm" x="920" y="490" fill="#888">FAISS 搜索 · 取 initial_candidates 条</text>
+
+  <line class="arrow-path" x1="920" y1="505" x2="920" y2="535"/>
+
+  <rect class="box box-multi" x="780" y="535" width="280" height="55" filter="url(#shadow)"/>
+  <text class="text-sm" x="920" y="555" fill="#444">推理：_generate_reasoning()</text>
+  <text class="text-sm" x="920" y="575" fill="#888">LLM 分析信息缺口，生成 follow-up</text>
+
+  <line class="arrow-path" x1="920" y1="590" x2="920" y2="620"/>
+
+  <rect class="box box-multi" x="780" y="620" width="280" height="55" filter="url(#shadow)"/>
+  <text class="text-sm" x="920" y="640" fill="#444">Hop 2：用 follow-up 再检索</text>
+  <text class="text-sm" x="920" y="660" fill="#888">取 refined_candidates 条</text>
+
+  <line class="arrow-path" x1="920" y1="675" x2="920" y2="705"/>
+
+  <rect class="box box-multi" x="780" y="705" width="280" height="55" filter="url(#shadow)"/>
+  <text class="text-sm" x="920" y="725" fill="#444">推理：信息够了？</text>
+  <text class="text-sm" x="920" y="745" fill="#888">is_sufficient = True？</text>
+
+  <!-- 循环箭头 -->
+  <path class="arrow-path" d="M 780 732 Q 740 732 740 680 Q 740 550 780 550" stroke="#f72585" stroke-dasharray="6,3"/>
+  <text class="text-label" x="700" y="640" fill="#f72585">不足则循环</text>
+
+  <!-- ════════════════════════ 合成 =═══════════════════════ -->
+  <line class="arrow" x1="920" y1="760" x2="920" y2="790"/>
+
+  <rect class="box box-multi" x="780" y="790" width="280" height="55" filter="url(#shadow)"/>
+  <text class="text-sm" x="920" y="810" fill="#444">合成：_synthesize_answer()</text>
+  <text class="text-sm" x="920" y="830" fill="#888">去重所有 chunks + 推理轨迹 → LLM 生成</text>
+
+  <!-- 简单 RAG 往下 -->
+  <line class="arrow" x1="530" y1="420" x2="530" y2="535"/>
+  
+  <rect class="box box-simple" x="390" y="535" width="280" height="55" filter="url(#shadow)"/>
+  <text class="text-sm" x="530" y="555" fill="#444">LLM 生成答案</text>
+  <text class="text-sm" x="530" y="575" fill="#888">背景信息 + 用户问题 → 回答</text>
+
+  <!-- 搜索结果也往下 -->
+  <line class="arrow" x1="250" y1="460" x2="250" y2="535"/>
+
+  <rect class="box box-path" x="120" y="535" width="260" height="55" filter="url(#shadow)"/>
+  <text class="text-sm" x="250" y="555" fill="#444">Bing 搜索结果</text>
+  <text class="text-sm" x="250" y="575" fill="#888">结构化文本</text>
+
+  <!-- ════════════════════════ 合并 =═══════════════════════ -->
+  <line class="arrow" x1="530" y1="590" x2="530" y2="620"/>
+  <line class="arrow-merge" x1="380" y1="620" x2="530" y2="620"/>
+  <line class="arrow-merge" x1="530" y1="620" x2="920" y2="620"/>
+  <line class="arrow-merge" x1="920" y1="620" x2="920" y2="845"/>
+  <line class="arrow-merge" x1="920" y1="845" x2="750" y2="845"/>
+  <line class="arrow-merge" x1="250" y1="590" x2="250" y2="845"/>
+  <line class="arrow-merge" x1="250" y1="845" x2="750" y2="845"/>
+
+  <!-- parallel merge -->
+  <rect class="box box-merge" x="400" y="845" width="520" height="60" filter="url(#shadow)"/>
+  <text class="text" x="660" y="865" fill="#7209b7">🔄 合并：多路结果整合</text>
+  <text class="text-sm" x="660" y="885" fill="#555">LLM 合并联网搜索 + 知识库答案 / 单路直接返回</text>
+
+  <line class="arrow" x1="660" y1="905" x2="660" y2="935"/>
+
+  <!-- ════════════════════════ 输出 =═══════════════════════ -->
+  <rect class="box box-output" x="380" y="935" width="560" height="50" filter="url(#shadow)"/>
+  <text class="text" x="660" y="955" fill="#06d6a0">🎯 返回给用户</text>
+  <text class="text-sm" x="660" y="972" fill="#555">Gradio UI · 流式输出 · Markdown 表格 · 推理过程展示</text>
+
+  <!-- ════════════════════════ 底部基础设施 =═══════════════════════ -->
+  <line class="arrow" x1="660" y1="985" x2="660" y2="1020" stroke="#bbb" stroke-dasharray="4,3"/>
+  <line class="arrow" x1="500" y1="1020" x2="660" y2="1020" stroke="#bbb" stroke-dasharray="4,3"/>
+  <line class="arrow" x1="660" y1="1020" x2="860" y2="1020" stroke="#bbb" stroke-dasharray="4,3"/>
+  <line class="arrow" x1="500" y1="1020" x2="500" y2="1050" stroke="#bbb" stroke-dasharray="4,3"/>
+  <line class="arrow" x1="860" y1="1020" x2="860" y2="1050" stroke="#bbb" stroke-dasharray="4,3"/>
+
+  <rect class="box box-api" x="350" y="1050" width="300" height="55" filter="url(#shadow)"/>
+  <text class="text-sm" x="500" y="1070" fill="#e63946">☁️ API 层 — Dashscope（通义千问）</text>
+  <text class="text-sm" x="500" y="1090" fill="#888">text-embedding-v3（向量） + qwen-plus（LLM）</text>
+
+  <rect class="box box-infra" x="700" y="1050" width="320" height="55" filter="url(#shadow)"/>
+  <text class="text-sm" x="860" y="1070" fill="#555">🧱 基础设施层</text>
+  <text class="text-sm" x="860" y="1090" fill="#888">text2vec.py（向量化） · retrievor.py（召回排序）</text>
+
+  <!-- ════════════════════════ 底部文件处理管线 =═══════════════════════ -->
+  <rect class="box box-file" x="350" y="1130" width="670" height="50" filter="url(#shadow)"/>
+  <text class="text" x="685" y="1150" fill="#fb8500">📄 文件处理管线</text>
+  <text class="text-sm" x="685" y="1168" fill="#555">上传 PDF/TXT → 文字提取 → 语义分块 → 向量化 → 建 FAISS 索引</text>
+
+  <!-- ════════════════════════ 图例 =═══════════════════════ -->
+  <g transform="translate(100, 1130)">
+    <rect x="0" y="0" width="200" height="130" rx="8" fill="#fff" stroke="#ddd" stroke-width="1"/>
+    <text x="100" y="20" text-anchor="middle" font-size="12" font-weight="600" fill="#444">图例</text>
+    
+    <rect x="10" y="30" width="16" height="16" rx="4" fill="#eef0ff" stroke="#4361ee"/>
+    <text x="35" y="42" font-size="11" fill="#555">用户交互层</text>
+
+    <rect x="10" y="52" width="16" height="16" rx="4" fill="#f0edff" stroke="#3a0ca3"/>
+    <text x="35" y="64" font-size="11" fill="#555">调度入口</text>
+
+    <rect x="10" y="74" width="16" height="16" rx="4" fill="#fff0f6" stroke="#f72585"/>
+    <text x="35" y="86" font-size="11" fill="#555">Agent / 多跳推理</text>
+
+    <rect x="10" y="96" width="16" height="16" rx="4" fill="#f8f9fa" stroke="#8d99ae" stroke-dasharray="4,2"/>
+    <text x="35" y="108" font-size="11" fill="#555">基础设施 / 配置</text>
+  </g>
+
+</svg>
+</div>
+</body>
+</html>
